@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { SignIn, SignUp, useUser, useClerk, SignedIn, SignedOut } from '@clerk/clerk-react';
 import { 
   LayoutDashboard, Sprout, Bell, Droplets, Settings, Menu, X, 
   Thermometer, Activity, Battery, Wifi, WifiOff, MapPin, ChevronRight,
@@ -8,7 +9,7 @@ import {
   Search, Download, Sun, Cloud, ArrowDown, ArrowUp, Carrot, MoreHorizontal, Calendar,
    User as UserIcon, Shield, Globe, Lock, Mail, Smartphone, Camera, Save, ToggleLeft, ToggleRight,
   CheckCircle, Clock, Filter, Plus, Trash2, Droplet, CloudRain, Zap, Image as ImageIcon,
-  ChevronDown, MessageSquare, Phone, FlaskConical, Layers, Diamond, Award,
+  ChevronDown, MessageSquare, Phone, FlaskConical, Layers, Diamond, Award, Star,
    CreditCard, Users, Link as LinkIcon, Key, History, BadgeCheck, AlertCircle, FileCheck,
    Facebook, IndianRupee, Sunrise, Sunset, Eye, Gauge, Navigation, Umbrella, MoveRight,
    BookOpen, Bug, LifeBuoy, Upload
@@ -225,102 +226,215 @@ const Layout: React.FC<{ children: React.ReactNode; onLogout: () => void }> = ({
    );
 };
 
-const LoginPage = ({ onLogin }: { onLogin: () => void }) => {
-  const [method, setMethod] = useState<'email' | 'phone'>('email');
+const LoginPage = () => {
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
+  
+  const features = [
+    { icon: Activity, label: "Real-time IoT Monitoring", desc: "24/7 sensor data" },
+    { icon: Stethoscope, label: "AI Crop Doctor", desc: "Disease detection" },
+    { icon: BarChart2, label: "Smart Analytics", desc: "Yield forecasting" },
+    { icon: Droplets, label: "Auto Irrigation", desc: "Water management" },
+  ];
+
+  const testimonials = [
+    { name: "Rajesh Kumar", role: "Wheat Farmer, Punjab", text: "AgriScore increased my yield by 35% in just one season!", avatar: "RK", rating: 5 },
+    { name: "Priya Sharma", role: "Organic Farm Owner", text: "The AI crop doctor saved my entire tomato harvest.", avatar: "PS", rating: 5 },
+    { name: "Amit Patel", role: "Cotton Farmer, Gujarat", text: "Best investment I've made for my farm operations.", avatar: "AP", rating: 5 },
+  ];
+
+  const stats = [
+    { value: "50K+", label: "Farmers" },
+    { value: "98%", label: "Satisfaction" },
+    { value: "+40%", label: "Avg Yield" },
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <div className="min-h-screen flex bg-white font-sans">
-       {/* Left Image Section */}
-       <div className="hidden lg:flex w-1/2 bg-slate-900 relative items-center justify-center overflow-hidden">
-          <img src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=1000&auto=format&fit=crop" className="absolute inset-0 w-full h-full object-cover opacity-60" alt="Farm" />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent" />
-          <div className="relative z-10 text-white max-w-lg px-12">
-            <div className="bg-green-500/20 backdrop-blur-md w-16 h-16 rounded-2xl flex items-center justify-center mb-8 border border-green-500/30">
-               <img src="/logo.svg" alt="AgriScore Logo" className="w-10 h-10" />
+    <div className="h-screen flex font-sans overflow-hidden">
+       {/* Left Branding Section */}
+       <div className="hidden lg:flex w-[55%] bg-gradient-to-br from-[#0a1f1a] via-[#0d2818] to-[#071510] relative items-center justify-center overflow-hidden">
+          {/* Animated Gradient Orbs */}
+          <div className="absolute inset-0">
+            <div className="absolute top-10 left-10 w-80 h-80 bg-gradient-to-r from-green-500/30 to-emerald-400/20 rounded-full blur-[100px] animate-pulse"></div>
+            <div className="absolute bottom-10 right-10 w-96 h-96 bg-gradient-to-l from-teal-500/25 to-green-400/15 rounded-full blur-[120px] animate-pulse" style={{animationDelay: '1s'}}></div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-emerald-500/20 rounded-full blur-[80px] animate-pulse" style={{animationDelay: '2s'}}></div>
+            {/* Moving gradient */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+          </div>
+          
+          {/* Animated Grid Pattern */}
+          <div className="absolute inset-0 opacity-[0.04]" style={{
+            backgroundImage: `linear-gradient(rgba(34,197,94,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(34,197,94,0.5) 1px, transparent 1px)`,
+            backgroundSize: '40px 40px',
+            animation: 'moveGrid 20s linear infinite'
+          }}></div>
+
+          {/* Floating 3D Cards */}
+          <div className="absolute top-20 right-24 w-24 h-24 bg-gradient-to-br from-green-400/30 to-emerald-500/20 rounded-2xl backdrop-blur-md border border-white/20 flex items-center justify-center shadow-2xl shadow-green-500/10" style={{animation: 'float 4s ease-in-out infinite'}}>
+            <Sprout className="w-12 h-12 text-green-400" />
+          </div>
+          <div className="absolute bottom-32 left-16 w-20 h-20 bg-gradient-to-br from-yellow-400/30 to-orange-500/20 rounded-xl backdrop-blur-md border border-white/20 flex items-center justify-center shadow-2xl shadow-yellow-500/10" style={{animation: 'float 5s ease-in-out infinite', animationDelay: '1s'}}>
+            <Sun className="w-10 h-10 text-yellow-400" />
+          </div>
+          <div className="absolute top-1/3 right-12 w-16 h-16 bg-gradient-to-br from-blue-400/30 to-cyan-500/20 rounded-xl backdrop-blur-md border border-white/20 flex items-center justify-center shadow-2xl shadow-blue-500/10" style={{animation: 'float 3.5s ease-in-out infinite', animationDelay: '0.5s'}}>
+            <CloudRain className="w-8 h-8 text-blue-400" />
+          </div>
+          <div className="absolute bottom-1/4 right-1/3 w-14 h-14 bg-gradient-to-br from-purple-400/30 to-pink-500/20 rounded-xl backdrop-blur-md border border-white/20 flex items-center justify-center shadow-2xl shadow-purple-500/10" style={{animation: 'float 4.5s ease-in-out infinite', animationDelay: '2s'}}>
+            <Activity className="w-7 h-7 text-purple-400" />
+          </div>
+          
+          {/* Particle Effect */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="absolute w-1 h-1 bg-green-400/60 rounded-full" style={{
+                left: `${15 + i * 15}%`,
+                top: `${20 + (i % 3) * 25}%`,
+                animation: `particle ${3 + i}s ease-in-out infinite`,
+                animationDelay: `${i * 0.5}s`
+              }}></div>
+            ))}
+          </div>
+          
+          <div className="relative z-10 text-white max-w-xl px-12">
+            {/* Logo */}
+            <div className="flex items-center gap-3 mb-8">
+              <img src="/logo.svg" alt="AgriScore" className="h-14 w-auto drop-shadow-lg" />
             </div>
-            <h1 className="text-5xl font-bold mb-6 leading-tight">Smart Farming for a <span className="text-green-400">Better Future</span></h1>
-            <p className="text-xl text-slate-200 leading-relaxed font-light">Monitor, Analyze, and Optimize your farm operations with real-time data insights and intelligent crop management.</p>
+            
+            {/* Main Heading */}
+            <h1 className="text-[2.75rem] font-bold mb-4 leading-[1.1] tracking-tight">
+              <span className="bg-gradient-to-r from-white via-green-100 to-white bg-clip-text text-transparent bg-[length:200%_auto]" style={{animation: 'shimmer 3s linear infinite'}}>Grow Smarter,</span>{' '}
+              <span className="relative block mt-1">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-emerald-300 to-teal-400 bg-[length:200%_auto]" style={{animation: 'gradient 4s ease infinite'}}>
+                  Harvest More
+                </span>
+                <svg className="absolute -bottom-1 left-0 w-full" height="6" viewBox="0 0 200 8" fill="none">
+                  <path d="M1 5.5C47.6667 2.16667 141 -2.4 199 5.5" stroke="url(#gradient)" strokeWidth="3" strokeLinecap="round"/>
+                  <defs><linearGradient id="gradient" x1="0" y1="0" x2="200" y2="0"><stop stopColor="#4ade80"/><stop offset="1" stopColor="#2dd4bf"/></linearGradient></defs>
+                </svg>
+              </span>
+            </h1>
+            <p className="text-base text-slate-400 leading-relaxed mb-6 max-w-md">
+              Transform your farming with AI-powered insights, real-time monitoring, and data-driven decisions.
+            </p>
+            
+            {/* Feature Grid */}
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              {features.map((feature, i) => (
+                <div key={i} className="group relative bg-white/[0.03] hover:bg-white/[0.08] backdrop-blur-sm rounded-xl p-3 border border-white/[0.08] hover:border-green-500/30 transition-all duration-300 cursor-default">
+                  <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 to-emerald-500/0 group-hover:from-green-500/5 group-hover:to-emerald-500/5 rounded-xl transition-all duration-300"></div>
+                  <div className="relative flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                      <feature.icon className="w-4 h-4 text-green-400" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-white text-xs">{feature.label}</p>
+                      <p className="text-[10px] text-slate-500">{feature.desc}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Testimonial Carousel */}
+            <div className="bg-white/[0.03] backdrop-blur-sm rounded-xl p-4 border border-white/[0.08]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                  {testimonials[activeTestimonial].avatar}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex gap-0.5 mb-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                    ))}
+                  </div>
+                  <p className="text-slate-300 text-xs leading-relaxed">"{testimonials[activeTestimonial].text}"</p>
+                  <p className="font-semibold text-white text-xs mt-1">{testimonials[activeTestimonial].name} <span className="text-slate-500 font-normal">• {testimonials[activeTestimonial].role}</span></p>
+                </div>
+              </div>
+              <div className="flex gap-1.5 mt-3 justify-center">
+                {testimonials.map((_, i) => (
+                  <button key={i} onClick={() => setActiveTestimonial(i)} className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${i === activeTestimonial ? 'w-5 bg-green-400' : 'bg-white/20 hover:bg-white/40'}`} />
+                ))}
+              </div>
+            </div>
+
+            {/* Stats Row */}
+            <div className="flex items-center justify-center gap-8 mt-5 py-4 px-6 bg-white/[0.03] backdrop-blur-sm rounded-xl border border-white/[0.08]">
+              {stats.map((stat, i) => (
+                <div key={i} className="text-center group cursor-default">
+                  <p className="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-300 bg-clip-text text-transparent group-hover:scale-110 transition-transform">{stat.value}</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">{stat.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
        </div>
 
        {/* Right Login Form */}
-       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-16">
-          <div className="max-w-md w-full space-y-8">
-            <div className="text-center lg:text-left">
-               <h2 className="text-3xl font-bold text-slate-900">Welcome Back</h2>
-               <p className="mt-2 text-slate-500">Sign in to your AgriScore account</p>
-            </div>
-
-            {/* Social Login */}
-            <div className="grid grid-cols-3 gap-3">
-               <button onClick={onLogin} className="flex items-center justify-center px-4 py-2.5 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors group">
-                  {/* Google Icon SVG */}
-                  <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                  </svg>
-               </button>
-               <button onClick={onLogin} className="flex items-center justify-center px-4 py-2.5 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors text-[#1877F2] group">
-                  <Facebook className="w-5 h-5 group-hover:scale-110 transition-transform" fill="currentColor" />
-               </button>
-               <button onClick={() => setMethod(method === 'phone' ? 'email' : 'phone')} className={`flex items-center justify-center px-4 py-2.5 border rounded-xl transition-colors ${method === 'phone' ? 'bg-green-50 border-green-200 text-green-600' : 'border-slate-200 hover:bg-slate-50 text-slate-600'}`}>
-                  <Smartphone className="w-5 h-5" />
-               </button>
-            </div>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-slate-200" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-slate-500 font-medium">Or continue with {method}</span>
-              </div>
-            </div>
-
-            <div className="space-y-5">
-               {method === 'email' ? (
-                 <>
-                   <div>
-                     <label className="block text-sm font-semibold text-slate-700 mb-1.5">Email address</label>
-                     <div className="relative group">
-                       <Mail className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-green-500 transition-colors" />
-                       <input type="email" className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-green-500/10 focus:border-green-500 focus:bg-white outline-none text-sm transition-all" placeholder="name@company.com" />
-                     </div>
-                   </div>
-                   <div>
-                     <div className="flex justify-between items-center mb-1.5">
-                       <label className="block text-sm font-semibold text-slate-700">Password</label>
-                       <a href="#" className="text-xs font-semibold text-green-600 hover:text-green-700">Forgot password?</a>
-                     </div>
-                     <div className="relative group">
-                       <Lock className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-green-500 transition-colors" />
-                       <input type="password" className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-green-500/10 focus:border-green-500 focus:bg-white outline-none text-sm transition-all" placeholder="••••••••" />
-                     </div>
-                   </div>
-                 </>
-               ) : (
-                 <div>
-                   <label className="block text-sm font-semibold text-slate-700 mb-1.5">Phone Number</label>
-                   <div className="relative group">
-                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium border-r border-slate-300 pr-2 mr-2 select-none">+91</span>
-                     <input type="tel" className="w-full pl-16 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-green-500/10 focus:border-green-500 focus:bg-white outline-none text-sm transition-all" placeholder="98765 43210" />
-                   </div>
-                   <div className="mt-4">
-                      <button className="w-full bg-white border border-slate-200 text-slate-700 font-semibold py-3 rounded-xl hover:bg-slate-50 transition-colors text-sm shadow-sm">Send OTP</button>
-                   </div>
-                 </div>
-               )}
-
-               <button onClick={onLogin} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-green-500/30 transition-all transform active:scale-[0.98]">
-                 Sign In
-               </button>
+       <div className="w-full lg:w-[45%] flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-slate-50 via-white to-emerald-50/50 relative overflow-hidden">
+          {/* Animated Decorative Elements */}
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-green-300/30 to-emerald-200/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" style={{animation: 'pulse 4s ease-in-out infinite'}}></div>
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-teal-300/30 to-green-200/30 rounded-full blur-3xl translate-y-1/3 -translate-x-1/3" style={{animation: 'pulse 5s ease-in-out infinite', animationDelay: '1s'}}></div>
+          <div className="absolute top-1/4 right-1/4 w-32 h-32 bg-gradient-to-br from-yellow-200/20 to-orange-200/20 rounded-full blur-2xl" style={{animation: 'float 6s ease-in-out infinite'}}></div>
+          
+          {/* Subtle pattern */}
+          <div className="absolute inset-0 opacity-[0.015]" style={{
+            backgroundImage: `radial-gradient(circle at 1px 1px, #16a34a 1px, transparent 0)`,
+            backgroundSize: '24px 24px'
+          }}></div>
+          
+          <div className="relative max-w-[380px] w-full flex flex-col">
+            {/* Mobile Logo */}
+            <div className="lg:hidden flex items-center justify-center mb-6">
+              <img src="/logo.svg" alt="AgriScore" className="h-12 w-auto" />
             </div>
             
-            <p className="text-center text-sm text-slate-500">
-               Don't have an account? <a href="#" className="font-bold text-green-600 hover:text-green-700">Create an account</a>
-            </p>
+            {/* Desktop Logo */}
+            <div className="hidden lg:flex justify-center mb-5">
+              <img src="/logo.svg" alt="AgriScore" className="h-10 w-auto" />
+            </div>
+            
+            {/* Clerk SignIn */}
+            <SignIn />
+            
+            {/* Trust Badges */}
+            <div className="mt-5 space-y-3">
+              {/* Security Row */}
+              <div className="flex items-center justify-center gap-4">
+                <div className="flex items-center gap-1.5 bg-green-50 text-green-700 px-2.5 py-1 rounded-full border border-green-200">
+                  <Shield className="w-3 h-3" />
+                  <span className="text-[10px] font-semibold">256-bit SSL</span>
+                </div>
+                <div className="flex items-center gap-1.5 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full border border-blue-200">
+                  <Lock className="w-3 h-3" />
+                  <span className="text-[10px] font-semibold">GDPR</span>
+                </div>
+                <div className="flex items-center gap-1.5 bg-purple-50 text-purple-700 px-2.5 py-1 rounded-full border border-purple-200">
+                  <BadgeCheck className="w-3 h-3" />
+                  <span className="text-[10px] font-semibold">Verified</span>
+                </div>
+              </div>
+              
+              {/* Rating Row */}
+              <div className="flex items-center justify-center gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-3 h-3 fill-amber-400 text-amber-400" />
+                ))}
+                <span className="text-[10px] text-slate-500 ml-1">4.9/5 from 50K+ farmers</span>
+              </div>
+              
+              {/* Policy Links */}
+              <p className="text-center text-[9px] text-slate-400">
+                By signing in, you agree to our <a href="#" className="text-green-600 hover:underline font-medium">Terms</a> & <a href="#" className="text-green-600 hover:underline font-medium">Privacy</a>
+              </p>
+            </div>
           </div>
        </div>
     </div>
@@ -3243,15 +3357,28 @@ const PlaceholderPage = ({ title }: { title: string }) => (
 );
 
 const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { isSignedIn, isLoaded } = useUser();
+  const { signOut } = useClerk();
 
-  if (!isAuthenticated) {
-    return <LoginPage onLogin={() => setIsAuthenticated(true)} />;
+  // Show loading state while Clerk loads
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-slate-600 font-medium">Loading AgriScore...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isSignedIn) {
+    return <LoginPage />;
   }
 
   return (
     <HashRouter>
-      <Layout onLogout={() => setIsAuthenticated(false)}>
+      <Layout onLogout={() => signOut()}>
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/farms" element={<CropManagement />} />
