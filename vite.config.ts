@@ -18,6 +18,10 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
+      },
+      build: {
+        // Increase warning threshold to account for large bundled UI
+        chunkSizeWarningLimit: 1500,
       }
     };
 });
