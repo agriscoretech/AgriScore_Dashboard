@@ -3149,6 +3149,7 @@ import { ResetPasswordPage } from './components/auth/ResetPasswordPage';
 const AppContent = () => {
    const { user, loading, signOut, isConfigured } = useAuth();
    const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
+   const [demoAcknowledged, setDemoAcknowledged] = useState(false);
 
    // Check if this is a password recovery redirect
    useEffect(() => {
@@ -3158,6 +3159,9 @@ const AppContent = () => {
          setIsPasswordRecovery(true);
       }
    }, []);
+
+   const handleContinueDemo = () => setDemoAcknowledged(true);
+   const shouldShowAuth = !user && (isConfigured || !demoAcknowledged);
 
    // Show password reset page if in recovery mode
    if (isPasswordRecovery) {
@@ -3176,9 +3180,9 @@ const AppContent = () => {
       );
    }
 
-   // If Supabase is configured and no user, show auth page
-   if (isConfigured && !user) {
-      return <AuthPage />;
+   // Show auth screen when user is missing (demo can opt out)
+   if (shouldShowAuth) {
+      return <AuthPage onContinueDemo={!isConfigured ? handleContinueDemo : undefined} />;
    }
 
    // Show dashboard (works in demo mode when Supabase not configured)

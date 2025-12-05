@@ -3,7 +3,11 @@ import { useAuth } from '../../hooks/useAuth';
 import { Mail, Lock, User, Eye, EyeOff, AlertCircle, ArrowRight, CheckCircle2, Wheat, Droplets, Sun, Sprout } from 'lucide-react';
 import ThreeBackground from './ThreeBackground';
 
-export const AuthPage: React.FC = () => {
+interface AuthPageProps {
+  onContinueDemo?: () => void;
+}
+
+export const AuthPage: React.FC<AuthPageProps> = ({ onContinueDemo }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
@@ -67,7 +71,13 @@ export const AuthPage: React.FC = () => {
             <p className="text-slate-500 mt-2">Demo Mode</p>
           </div>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => {
+              if (onContinueDemo) {
+                onContinueDemo();
+                return;
+              }
+              window.location.reload();
+            }}
             className="w-full bg-gradient-to-r from-amber-500 to-green-600 hover:from-amber-600 hover:to-green-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors"
           >
             Continue to Dashboard
