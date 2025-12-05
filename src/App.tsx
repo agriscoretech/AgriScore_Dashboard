@@ -3141,24 +3141,68 @@ const PlaceholderPage = ({ title }: { title: string }) => (
   </div>
 );
 
-const App = () => (
-   <HashRouter>
-      <Layout onLogout={() => window.location.reload()}>
-         <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/farms" element={<CropManagement />} />
-            <Route path="/irrigation" element={<SoilWater />} />
-            <Route path="/weather" element={<WeatherPage />} />
-            <Route path="/tasks" element={<TaskManagement />} />
-            <Route path="/doctor" element={<CropDoctor />} />
-            <Route path="/reports" element={<ReportsAnalytics />} />
-            <Route path="/score" element={<AgriScorePage />} />
-            <Route path="/settings" element={<FarmSettings />} />
-            <Route path="/account" element={<MyAccount />} />
-            <Route path="/help" element={<HelpSupport />} />
-         </Routes>
-      </Layout>
-   </HashRouter>
-);
+// Auth imports
+import { useAuth } from './hooks/useAuth';
+import { AuthPage } from './components/auth/AuthPage';
+import { ResetPasswordPage } from './components/auth/ResetPasswordPage';
+
+const AppContent = () => {
+   const { user, loading, signOut, isConfigured } = useAuth();
+   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
+
+   // Check if this is a password recovery redirect
+   useEffect(() => {
+      const hash = window.location.hash;
+      // Supabase password recovery URLs contain type=recovery in the hash
+      if (hash && hash.includes('type=recovery')) {
+         setIsPasswordRecovery(true);
+      }
+   }, []);
+
+   // Show password reset page if in recovery mode
+   if (isPasswordRecovery) {
+      return <ResetPasswordPage />;
+   }
+
+   // Show loading spinner while checking auth
+   if (loading) {
+      return (
+         <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4">
+               <div className="w-12 h-12 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
+               <p className="text-slate-600 font-medium">Loading...</p>
+            </div>
+         </div>
+      );
+   }
+
+   // If Supabase is configured and no user, show auth page
+   if (isConfigured && !user) {
+      return <AuthPage />;
+   }
+
+   // Show dashboard (works in demo mode when Supabase not configured)
+   return (
+      <HashRouter>
+         <Layout onLogout={signOut}>
+            <Routes>
+               <Route path="/" element={<Dashboard />} />
+               <Route path="/farms" element={<CropManagement />} />
+               <Route path="/irrigation" element={<SoilWater />} />
+               <Route path="/weather" element={<WeatherPage />} />
+               <Route path="/tasks" element={<TaskManagement />} />
+               <Route path="/doctor" element={<CropDoctor />} />
+               <Route path="/reports" element={<ReportsAnalytics />} />
+               <Route path="/score" element={<AgriScorePage />} />
+               <Route path="/settings" element={<FarmSettings />} />
+               <Route path="/account" element={<MyAccount />} />
+               <Route path="/help" element={<HelpSupport />} />
+            </Routes>
+         </Layout>
+      </HashRouter>
+   );
+};
+
+const App = () => <AppContent />;
 
 export default App;
