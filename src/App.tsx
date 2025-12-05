@@ -1,7 +1,5 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { SignIn, SignUp, useUser, useClerk, SignedIn, SignedOut } from '@clerk/clerk-react';
 import { 
   LayoutDashboard, Sprout, Bell, Droplets, Settings, Menu, X, 
   Thermometer, Activity, Battery, Wifi, WifiOff, MapPin, ChevronRight,
@@ -19,7 +17,7 @@ import { GoogleGenAI } from "@google/genai";
 import { api } from './services/mockDataService';
 import { Farm, Field, Device, Sensor, Reading, Alert, IrrigationEvent, DeviceStatus, AlertSeverity, SensorType, Task, HarvestItem, User } from './types';
 
-const soilHistoryUrl = new URL('./IoT_soil_data.csv', import.meta.url).href;
+const soilHistoryUrl = new URL('./assets/data/IoT_soil_data.csv', import.meta.url).href;
 
 // --- Helper Components ---
 
@@ -226,221 +224,6 @@ const Layout: React.FC<{ children: React.ReactNode; onLogout: () => void }> = ({
    );
 };
 
-const LoginPage = () => {
-  const [activeTestimonial, setActiveTestimonial] = useState(0);
-  
-  const features = [
-    { icon: Activity, label: "Real-time IoT Monitoring", desc: "24/7 sensor data" },
-    { icon: Stethoscope, label: "AI Crop Doctor", desc: "Disease detection" },
-    { icon: BarChart2, label: "Smart Analytics", desc: "Yield forecasting" },
-    { icon: Droplets, label: "Auto Irrigation", desc: "Water management" },
-  ];
-
-  const testimonials = [
-    { name: "Rajesh Kumar", role: "Wheat Farmer, Punjab", text: "AgriScore increased my yield by 35% in just one season!", avatar: "RK", rating: 5 },
-    { name: "Priya Sharma", role: "Organic Farm Owner", text: "The AI crop doctor saved my entire tomato harvest.", avatar: "PS", rating: 5 },
-    { name: "Amit Patel", role: "Cotton Farmer, Gujarat", text: "Best investment I've made for my farm operations.", avatar: "AP", rating: 5 },
-  ];
-
-  const stats = [
-    { value: "50K+", label: "Farmers" },
-    { value: "98%", label: "Satisfaction" },
-    { value: "+40%", label: "Avg Yield" },
-  ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="h-screen flex font-sans overflow-hidden">
-       {/* Left Branding Section */}
-       <div className="hidden lg:flex w-[55%] bg-gradient-to-br from-[#0a1f1a] via-[#0d2818] to-[#071510] relative items-center justify-center overflow-hidden">
-          {/* Animated Gradient Orbs */}
-          <div className="absolute inset-0">
-            <div className="absolute top-10 left-10 w-80 h-80 bg-gradient-to-r from-green-500/30 to-emerald-400/20 rounded-full blur-[100px] animate-pulse"></div>
-            <div className="absolute bottom-10 right-10 w-96 h-96 bg-gradient-to-l from-teal-500/25 to-green-400/15 rounded-full blur-[120px] animate-pulse" style={{animationDelay: '1s'}}></div>
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-emerald-500/20 rounded-full blur-[80px] animate-pulse" style={{animationDelay: '2s'}}></div>
-            {/* Moving gradient */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
-          </div>
-          
-          {/* Animated Grid Pattern */}
-          <div className="absolute inset-0 opacity-[0.04]" style={{
-            backgroundImage: `linear-gradient(rgba(34,197,94,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(34,197,94,0.5) 1px, transparent 1px)`,
-            backgroundSize: '40px 40px',
-            animation: 'moveGrid 20s linear infinite'
-          }}></div>
-
-          {/* Floating 3D Cards */}
-          <div className="absolute top-20 right-24 w-24 h-24 bg-gradient-to-br from-green-400/30 to-emerald-500/20 rounded-2xl backdrop-blur-md border border-white/20 flex items-center justify-center shadow-2xl shadow-green-500/10" style={{animation: 'float 4s ease-in-out infinite'}}>
-            <Sprout className="w-12 h-12 text-green-400" />
-          </div>
-          <div className="absolute bottom-32 left-16 w-20 h-20 bg-gradient-to-br from-yellow-400/30 to-orange-500/20 rounded-xl backdrop-blur-md border border-white/20 flex items-center justify-center shadow-2xl shadow-yellow-500/10" style={{animation: 'float 5s ease-in-out infinite', animationDelay: '1s'}}>
-            <Sun className="w-10 h-10 text-yellow-400" />
-          </div>
-          <div className="absolute top-1/3 right-12 w-16 h-16 bg-gradient-to-br from-blue-400/30 to-cyan-500/20 rounded-xl backdrop-blur-md border border-white/20 flex items-center justify-center shadow-2xl shadow-blue-500/10" style={{animation: 'float 3.5s ease-in-out infinite', animationDelay: '0.5s'}}>
-            <CloudRain className="w-8 h-8 text-blue-400" />
-          </div>
-          <div className="absolute bottom-1/4 right-1/3 w-14 h-14 bg-gradient-to-br from-purple-400/30 to-pink-500/20 rounded-xl backdrop-blur-md border border-white/20 flex items-center justify-center shadow-2xl shadow-purple-500/10" style={{animation: 'float 4.5s ease-in-out infinite', animationDelay: '2s'}}>
-            <Activity className="w-7 h-7 text-purple-400" />
-          </div>
-          
-          {/* Particle Effect */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="absolute w-1 h-1 bg-green-400/60 rounded-full" style={{
-                left: `${15 + i * 15}%`,
-                top: `${20 + (i % 3) * 25}%`,
-                animation: `particle ${3 + i}s ease-in-out infinite`,
-                animationDelay: `${i * 0.5}s`
-              }}></div>
-            ))}
-          </div>
-          
-          <div className="relative z-10 text-white max-w-xl px-12">
-            {/* Logo */}
-            <div className="flex items-center gap-3 mb-8">
-              <img src="/logo.svg" alt="AgriScore" className="h-14 w-auto drop-shadow-lg" />
-            </div>
-            
-            {/* Main Heading */}
-            <h1 className="text-[2.75rem] font-bold mb-4 leading-[1.2] tracking-tight overflow-visible">
-              <span className="inline-block pb-1 bg-gradient-to-r from-white via-green-100 to-white bg-clip-text text-transparent bg-[length:200%_auto]" style={{animation: 'shimmer 3s linear infinite'}}>Grow Smarter,</span>{' '}
-              <span className="relative block mt-1">
-                <span className="inline-block pb-1 text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-emerald-300 to-teal-400 bg-[length:200%_auto]" style={{animation: 'gradient 4s ease infinite'}}>
-                  Harvest More
-                </span>
-                <svg className="absolute -bottom-0 left-0 w-full" height="6" viewBox="0 0 200 8" fill="none">
-                  <path d="M1 5.5C47.6667 2.16667 141 -2.4 199 5.5" stroke="url(#gradient)" strokeWidth="3" strokeLinecap="round"/>
-                  <defs><linearGradient id="gradient" x1="0" y1="0" x2="200" y2="0"><stop stopColor="#4ade80"/><stop offset="1" stopColor="#2dd4bf"/></linearGradient></defs>
-                </svg>
-              </span>
-            </h1>
-            <p className="text-base text-slate-400 leading-relaxed mb-6 max-w-md">
-              Transform your farming with AI-powered insights, real-time monitoring, and data-driven decisions.
-            </p>
-            
-            {/* Feature Grid */}
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              {features.map((feature, i) => (
-                <div key={i} className="group relative bg-white/[0.03] hover:bg-white/[0.08] backdrop-blur-sm rounded-xl p-3 border border-white/[0.08] hover:border-green-500/30 transition-all duration-300 cursor-default">
-                  <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 to-emerald-500/0 group-hover:from-green-500/5 group-hover:to-emerald-500/5 rounded-xl transition-all duration-300"></div>
-                  <div className="relative flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
-                      <feature.icon className="w-4 h-4 text-green-400" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-white text-xs">{feature.label}</p>
-                      <p className="text-[10px] text-slate-500">{feature.desc}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            {/* Testimonial Carousel */}
-            <div className="bg-white/[0.03] backdrop-blur-sm rounded-xl p-4 border border-white/[0.08]">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
-                  {testimonials[activeTestimonial].avatar}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex gap-0.5 mb-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                    ))}
-                  </div>
-                  <p className="text-slate-300 text-xs leading-relaxed">"{testimonials[activeTestimonial].text}"</p>
-                  <p className="font-semibold text-white text-xs mt-1">{testimonials[activeTestimonial].name} <span className="text-slate-500 font-normal">• {testimonials[activeTestimonial].role}</span></p>
-                </div>
-              </div>
-              <div className="flex gap-1.5 mt-3 justify-center">
-                {testimonials.map((_, i) => (
-                  <button key={i} onClick={() => setActiveTestimonial(i)} className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${i === activeTestimonial ? 'w-5 bg-green-400' : 'bg-white/20 hover:bg-white/40'}`} />
-                ))}
-              </div>
-            </div>
-
-            {/* Stats Row */}
-            <div className="flex items-center justify-center gap-8 mt-5 py-4 px-6 bg-white/[0.03] backdrop-blur-sm rounded-xl border border-white/[0.08]">
-              {stats.map((stat, i) => (
-                <div key={i} className="text-center group cursor-default">
-                  <p className="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-300 bg-clip-text text-transparent group-hover:scale-110 transition-transform">{stat.value}</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">{stat.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-       </div>
-
-       {/* Right Login Form */}
-       <div className="w-full lg:w-[45%] flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-slate-50 via-white to-emerald-50/50 relative overflow-hidden">
-          {/* Animated Decorative Elements */}
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-green-300/30 to-emerald-200/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" style={{animation: 'pulse 4s ease-in-out infinite'}}></div>
-          <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-teal-300/30 to-green-200/30 rounded-full blur-3xl translate-y-1/3 -translate-x-1/3" style={{animation: 'pulse 5s ease-in-out infinite', animationDelay: '1s'}}></div>
-          <div className="absolute top-1/4 right-1/4 w-32 h-32 bg-gradient-to-br from-yellow-200/20 to-orange-200/20 rounded-full blur-2xl" style={{animation: 'float 6s ease-in-out infinite'}}></div>
-          
-          {/* Subtle pattern */}
-          <div className="absolute inset-0 opacity-[0.015]" style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, #16a34a 1px, transparent 0)`,
-            backgroundSize: '24px 24px'
-          }}></div>
-          
-          <div className="relative max-w-[380px] w-full flex flex-col">
-            {/* Mobile Logo */}
-            <div className="lg:hidden flex items-center justify-center mb-6">
-              <img src="/logo.svg" alt="AgriScore" className="h-12 w-auto" />
-            </div>
-            
-            {/* Desktop Logo */}
-            <div className="hidden lg:flex justify-center mb-5">
-              <img src="/logo.svg" alt="AgriScore" className="h-10 w-auto" />
-            </div>
-            
-            {/* Clerk SignIn */}
-            <SignIn />
-            
-            {/* Trust Badges */}
-            <div className="mt-5 space-y-3">
-              {/* Security Row */}
-              <div className="flex items-center justify-center gap-4">
-                <div className="flex items-center gap-1.5 bg-green-50 text-green-700 px-2.5 py-1 rounded-full border border-green-200">
-                  <Shield className="w-3 h-3" />
-                  <span className="text-[10px] font-semibold">256-bit SSL</span>
-                </div>
-                <div className="flex items-center gap-1.5 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full border border-blue-200">
-                  <Lock className="w-3 h-3" />
-                  <span className="text-[10px] font-semibold">GDPR</span>
-                </div>
-                <div className="flex items-center gap-1.5 bg-purple-50 text-purple-700 px-2.5 py-1 rounded-full border border-purple-200">
-                  <BadgeCheck className="w-3 h-3" />
-                  <span className="text-[10px] font-semibold">Verified</span>
-                </div>
-              </div>
-              
-              {/* Rating Row */}
-              <div className="flex items-center justify-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-3 h-3 fill-amber-400 text-amber-400" />
-                ))}
-                <span className="text-[10px] text-slate-500 ml-1">4.9/5 from 50K+ farmers</span>
-              </div>
-              
-              {/* Policy Links */}
-              <p className="text-center text-[9px] text-slate-400">
-                By signing in, you agree to our <a href="#" className="text-green-600 hover:underline font-medium">Terms</a> & <a href="#" className="text-green-600 hover:underline font-medium">Privacy</a>
-              </p>
-            </div>
-          </div>
-       </div>
-    </div>
-  )
-}
-
 // --- Dashboard Page ---
 
 const Dashboard = () => {
@@ -479,8 +262,8 @@ const Dashboard = () => {
 
       const headers = ['Category', 'Metric', 'Value', 'Unit', 'Notes'];
       const productionRows = productionData.map((crop) => ['Production Mix', crop.name, crop.value, '%', 'Relative share']);
-      const harvestRows = harvest.map((item) => ['Harvest', item.crop, item.yield, item.unit, `Quality: ${item.quality}`]);
-      const taskRows = tasks.map((task) => ['Task', task.title, task.status, '-', `Due ${task.dueDate}`]);
+      const harvestRows = harvest.map((item) => ['Harvest', item.name, item.amount, item.unit, `Color: ${item.color}`]);
+      const taskRows = tasks.map((task) => ['Task', task.name, task.status, '-', `Due ${task.date}`]);
       const yieldRows = yieldData.map((point) => ['Yield Trend', point.name, point.value, 'tons', 'Monthly yield']);
 
       const rows = [...productionRows, ...harvestRows, ...taskRows, ...yieldRows];
@@ -2819,9 +2602,9 @@ const HelpSupport = () => {
       setIsTextLoading(true);
 
       try {
-         const apiKey = process.env.API_KEY;
-         if (!apiKey || apiKey === 'your-api-key-here') {
-            throw new Error('API Key missing or invalid');
+         const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+         if (!apiKey || apiKey === 'your_gemini_api_key_here') {
+            throw new Error('Gemini API Key missing. Please set VITE_GEMINI_API_KEY in your .env.local file.');
          }
 
          const ai = new GoogleGenAI({ apiKey });
@@ -2839,7 +2622,9 @@ const HelpSupport = () => {
          const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents,
-            systemInstruction: 'You are an expert agricultural assistant helping farmers with crop management, soil health, weather patterns, and farm operations. Provide practical, actionable advice.'
+            config: {
+               systemInstruction: 'You are an expert agricultural assistant helping farmers with crop management, soil health, weather patterns, and farm operations. Provide practical, actionable advice.'
+            }
          });
 
          const text = response.text || 'No response received';
@@ -3356,14 +3141,9 @@ const PlaceholderPage = ({ title }: { title: string }) => (
   </div>
 );
 
-const CLERK_ENV_VALUE = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-const CLERK_ENABLED = Boolean(CLERK_ENV_VALUE);
-console.log('[AgriScore] Clerk env value:', CLERK_ENV_VALUE);
-console.log('[AgriScore] CLERK_ENABLED:', CLERK_ENABLED);
-
-const ApplicationShell = ({ onLogout }: { onLogout: () => void }) => (
+const App = () => (
    <HashRouter>
-      <Layout onLogout={onLogout}>
+      <Layout onLogout={() => window.location.reload()}>
          <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/farms" element={<CropManagement />} />
@@ -3380,38 +3160,5 @@ const ApplicationShell = ({ onLogout }: { onLogout: () => void }) => (
       </Layout>
    </HashRouter>
 );
-
-const ClerkGate = () => {
-   const { isSignedIn, isLoaded } = useUser();
-   const { signOut } = useClerk();
-
-   if (!isLoaded) {
-      return (
-         <div className="min-h-screen flex items-center justify-center bg-slate-50">
-            <div className="flex flex-col items-center gap-4">
-               <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
-               <p className="text-slate-600 font-medium">Loading AgriScore...</p>
-            </div>
-         </div>
-      );
-   }
-
-   if (!isSignedIn) {
-      return <LoginPage />;
-   }
-
-   return <ApplicationShell onLogout={() => signOut()} />;
-};
-
-const App = () => {
-   if (!CLERK_ENABLED) {
-      if (typeof window !== 'undefined') {
-         console.warn('[AgriScore] Clerk publishable key missing. Running without authentication.');
-      }
-      return <ApplicationShell onLogout={() => window.location.reload()} />;
-   }
-
-   return <ClerkGate />;
-};
 
 export default App;

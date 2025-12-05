@@ -16,12 +16,21 @@ export default defineConfig(({ mode }) => {
       },
       resolve: {
         alias: {
-          '@': path.resolve(__dirname, '.'),
+          '@': path.resolve(__dirname, 'src'),
         }
       },
       build: {
-        // Increase warning threshold to account for large bundled UI
+        outDir: 'dist',
+        sourcemap: false,
         chunkSizeWarningLimit: 1500,
+        rollupOptions: {
+          output: {
+            manualChunks: {
+              vendor: ['react', 'react-dom', 'react-router-dom'],
+              charts: ['recharts'],
+            }
+          }
+        }
       }
     };
 });
