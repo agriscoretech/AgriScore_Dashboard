@@ -1,31 +1,52 @@
-import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getDatabase, ref, get, Database } from 'firebase/database';
+// Firebase client with safe initialization
+// Only loads Firebase SDK when config is available
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL || '',
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
 };
 
-const hasValidConfig = Object.values(firebaseConfig).every(Boolean);
+const hasValidConfig = Boolean(
+  firebaseConfig.apiKey && 
+  firebaseConfig.databaseURL && 
+  firebaseConfig.projectId
+);
 
-let firebaseApp: FirebaseApp | null = null;
-let database: Database | null = null;
+export const isFirebaseEnabled = hasValidConfig;
+export let db: unknown = null;
 
-if (hasValidConfig) {
+let firebaseInitialized = false;
+let databaseInstance: unknown = null;
+
+const initFirebase = async () => {
+  if (firebaseInitialized) return databaseInstance;
+  if (!hasValidConfig) {
+    console.log('[Firebase] No config - using mock data');
+    firebaseInitialized = true;
+    return null;
+  }
+  
   try {
-    firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
-    database = getDatabase(firebaseApp);
+    const { initializeApp, getApps, getApp } = await import('firebase/app');
+    const { getDatabase } = await import('firebase/database');
+    
+    const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+    databaseInstance = getDatabase(app);
+    db = databaseInstance;
+    console.log('[Firebase] Initialized successfully');
   } catch (error) {
     console.warn('[Firebase] Failed to initialize:', error);
+    databaseInstance = null;
   }
-} else {
-  console.warn('[Firebase] Missing configuration values. Falling back to mock data.');
-}
+  
+  firebaseInitialized = true;
+  return databaseInstance;
+};
 
 const normalizeCollection = <T extends Record<string, unknown>>(value: unknown): T[] => {
   if (!value) return [];
