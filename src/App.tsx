@@ -2792,181 +2792,140 @@ const MyAccount = () => {
 };
 
 const HelpSupport = () => {
-   const [activeTab, setActiveTab] = useState<'chat' | 'docs' | 'faq' | 'contact'>('chat');
-   const [expandedFaq, setExpandedFaq] = useState<number | null>(0);
    const [messages, setMessages] = useState<{role: 'user' | 'model', text: string}[]>([
-      { role: 'model', text: 'Hi! 👋 I\'m your AgriScore assistant. Ask me anything about crops, soil health, weather, or farm management!' }
+      { role: 'model', text: 'Hi! 👋 I\'m here to help. Ask me anything about your farm, soil, weather, or AgriScore features.' }
    ]);
    const [input, setInput] = useState('');
-   const [isTextLoading, setIsTextLoading] = useState(false);
+   const [isLoading, setIsLoading] = useState(false);
    const chatEndRef = useRef<HTMLDivElement>(null);
 
-   const docs = [
-      { 
-         icon: Sprout, 
-         title: 'Getting Started', 
-         description: 'Learn the basics of AgriScore',
-         items: ['Dashboard overview', 'Setting up devices', 'First readings']
-      },
-      { 
-         icon: Droplets, 
-         title: 'Soil & Water', 
-         description: 'Optimize moisture and nutrients',
-         items: ['Soil health scoring', 'Irrigation planning', 'Nutrient management']
-      },
-      { 
-         icon: Cloud, 
-         title: 'Weather & Alerts', 
-         description: 'Weather forecasting & notifications',
-         items: ['Weather forecasts', 'Alert settings', 'Crop recommendations']
-      },
-      { 
-         icon: BarChart2, 
-         title: 'Analytics', 
-         description: 'Track performance & insights',
-         items: ['Reading analytics', 'Yield predictions', 'Historical data']
-      },
-   ];
-
    const faqs = [
-      { 
-         question: 'How do I improve my AgriScore?',
-         answer: 'Monitor your soil moisture levels weekly, maintain optimal nutrient balance, and ensure all IoT devices are functioning properly. Regular small adjustments compound to maintain high scores.'
-      },
-      { 
-         question: 'Can I export my farm data?',
-         answer: 'Yes! Go to any dashboard section and click the Export button. Choose PDF or Excel format. Your data includes soil readings, weather history, and yield predictions.'
-      },
-      { 
-         question: 'How often are readings updated?',
-         answer: 'IoT sensors push data every 15 minutes. Weather data updates hourly. All analytics refresh in real-time on your dashboard.'
-      },
-      { 
-         question: 'What do I do if a device goes offline?',
-         answer: 'Check device battery and WiFi connection. You can manage devices in Settings → IoT Devices. We send alerts when devices are offline for 30+ minutes.'
-      },
-      { 
-         question: 'Is my farm data secure?',
-         answer: 'All data is encrypted in transit and at rest. We comply with agricultural data privacy standards and never share your data with third parties.'
-      },
+      { q: 'How do I improve my AgriScore?', a: 'Monitor soil moisture, maintain nutrient balance, and keep devices healthy. Weekly check-ins help.' },
+      { q: 'Can I export my data?', a: 'Yes! Click Export on any dashboard. Choose PDF or Excel format with all your readings.' },
+      { q: 'How often do sensors update?', a: 'Every 15 minutes for sensor data, hourly for weather. All in real-time on your dashboard.' },
+      { q: 'Device is offline, what do I do?', a: 'Check battery and WiFi. Go to Settings → IoT Devices. We alert if offline for 30+ mins.' },
+      { q: 'Is my data secure?', a: 'Yes. All data encrypted at rest and in transit. We never share your farm data with anyone.' },
+      { q: 'How do I contact support?', a: 'Email support@agriscore.in or call +91 98765 43210. We respond within 4 hours.' },
    ];
 
    const contacts = [
-      { label: 'Email', value: 'support@agriscore.in', icon: Mail, action: () => window.location.href = 'mailto:support@agriscore.in' },
-      { label: 'Phone', value: '+91 98765 43210', icon: Phone, action: () => alert('Call support: +91 98765 43210') },
-      { label: 'Live Chat', value: 'Available 8am-8pm IST', icon: MessageSquare, action: () => alert('Opening live chat...') },
+      { 
+         icon: Mail, 
+         label: 'Email Support', 
+         value: 'support@agriscore.in',
+         action: () => window.location.href = 'mailto:support@agriscore.in'
+      },
+      { 
+         icon: Phone, 
+         label: 'Call Us', 
+         value: '+91 98765 43210',
+         action: () => alert('📞 Call: +91 98765 43210')
+      },
+      { 
+         icon: Clock, 
+         label: 'Support Hours', 
+         value: 'Mon-Sat 8am-8pm IST',
+         action: () => alert('We are available Mon-Sat from 8am to 8pm IST')
+      },
    ];
 
    useEffect(() => {
       chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
    }, [messages]);
 
-   const handleSendText = async () => {
+   const handleSend = async () => {
       if (!input.trim()) return;
       const userMsg = input;
       setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
       setInput('');
-      setIsTextLoading(true);
+      setIsLoading(true);
 
       try {
          const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
          if (!apiKey || apiKey === 'your_gemini_api_key_here') {
-            throw new Error('Gemini API Key missing. Please set VITE_GEMINI_API_KEY in your .env.local file.');
+            throw new Error('API Key missing. Set VITE_GEMINI_API_KEY in .env.local');
          }
 
          const ai = new GoogleGenAI({ apiKey });
-
          const contents = messages.map(m => ({
             role: m.role === 'user' ? 'user' : 'model',
             parts: [{ text: m.text }]
          }));
-
-         contents.push({
-            role: 'user',
-            parts: [{ text: userMsg }]
-         });
+         contents.push({ role: 'user', parts: [{ text: userMsg }] });
 
          const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents,
             config: {
-               systemInstruction: 'You are an expert agricultural assistant helping farmers with crop management, soil health, weather patterns, and farm operations. Provide practical, actionable advice.'
+               systemInstruction: 'You are a helpful agricultural assistant. Provide practical advice about farming, crops, soil health, and AgriScore features.'
             }
          });
 
-         const text = response.text || 'No response received';
+         const text = response.text || 'No response';
          setMessages(prev => [...prev, { role: 'model', text }]);
       } catch (error: any) {
-         console.error('Text chat error:', error);
-         const errorMsg = error.message || 'Error connecting to AI.';
-         setMessages(prev => [...prev, { role: 'model', text: `Error: ${errorMsg}` }]);
+         console.error('Error:', error);
+         setMessages(prev => [...prev, { role: 'model', text: `Error: ${error.message}` }]);
       } finally {
-         setIsTextLoading(false);
+         setIsLoading(false);
       }
    };
 
    return (
-      <div className="space-y-6 pb-8">
+      <div className="space-y-8 pb-8">
          <div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">Help & Support</h1>
-            <p className="text-slate-500">Get instant answers from our AI assistant or explore documentation</p>
+            <h1 className="text-3xl font-bold text-slate-900">Help & Support</h1>
+            <p className="text-slate-500 mt-1">Get instant answers from our AI or reach our support team</p>
          </div>
 
-         {/* Tab Navigation */}
-         <div className="flex gap-2 overflow-x-auto pb-2">
-            {[
-               { id: 'chat', label: '💬 AI Chatbot', icon: MessageSquare },
-               { id: 'docs', label: '📚 Documentation', icon: BookOpen },
-               { id: 'faq', label: '❓ FAQ', icon: HelpCircle },
-               { id: 'contact', label: '📞 Contact', icon: Mail }
-            ].map(tab => (
-               <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all ${
-                     activeTab === tab.id
-                        ? 'bg-green-600 text-white shadow-lg shadow-green-200'
-                        : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300'
-                  }`}
-               >
-                  {tab.label}
-               </button>
-            ))}
+         {/* Contact Cards */}
+         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {contacts.map((contact, i) => {
+               const Icon = contact.icon;
+               return (
+                  <Card 
+                     key={i}
+                     className="p-5 cursor-pointer hover:shadow-lg hover:border-green-200 transition-all"
+                     onClick={contact.action}
+                  >
+                     <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-green-100 text-green-600 flex items-center justify-center">
+                           <Icon className="w-5 h-5" />
+                        </div>
+                        <div>
+                           <p className="text-xs text-slate-500 font-medium">{contact.label}</p>
+                           <p className="text-sm font-semibold text-slate-900">{contact.value}</p>
+                        </div>
+                     </div>
+                  </Card>
+               );
+            })}
          </div>
 
-         {/* Chat Tab */}
-         {activeTab === 'chat' && (
-            <Card className="p-0 overflow-hidden h-[600px] flex flex-col">
-               <div className="p-6 border-b border-slate-100 bg-gradient-to-r from-green-50 to-white flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                     <div className="w-12 h-12 rounded-full bg-green-600 text-white flex items-center justify-center">
-                        <MessageSquare className="w-6 h-6" />
-                     </div>
-                     <div>
-                        <p className="text-sm font-semibold text-slate-900">AgriScore AI Assistant</p>
-                        <p className="text-xs text-slate-500">Powered by Google Gemini</p>
-                     </div>
-                  </div>
-                  <div className="text-xs font-semibold text-green-600 bg-green-100 px-3 py-1.5 rounded-full flex items-center gap-2">
-                     <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" /> Online
-                  </div>
+         {/* Main Content */}
+         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Chat */}
+            <Card className="lg:col-span-2 p-0 flex flex-col h-[550px] overflow-hidden">
+               <div className="px-6 py-4 border-b border-slate-200 bg-green-600 text-white">
+                  <h2 className="font-semibold">Chat with AI Assistant</h2>
+                  <p className="text-sm text-green-100">Ask about your farm, soil, weather & more</p>
                </div>
 
-               <div className="flex-1 overflow-y-auto bg-slate-50 p-6 space-y-4 custom-scrollbar">
-                  {messages.map((msg, idx) => (
-                     <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-xs rounded-2xl p-4 text-sm leading-relaxed ${
+               <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar bg-slate-50">
+                  {messages.map((msg, i) => (
+                     <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-xs px-4 py-2 rounded-lg text-sm leading-relaxed ${
                            msg.role === 'user'
-                              ? 'bg-green-600 text-white rounded-br-sm'
-                              : 'bg-white text-slate-700 border border-slate-200 rounded-bl-sm shadow-sm'
+                              ? 'bg-green-600 text-white rounded-br-none'
+                              : 'bg-white text-slate-900 border border-slate-200 rounded-bl-none'
                         }`}>
                            {msg.text}
                         </div>
                      </div>
                   ))}
-                  {isTextLoading && (
+                  {isLoading && (
                      <div className="flex justify-start">
-                        <div className="bg-white p-4 rounded-2xl rounded-bl-sm border border-slate-200 shadow-sm flex gap-2 items-center">
+                        <div className="bg-white border border-slate-200 px-4 py-2 rounded-lg flex gap-2">
                            <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" />
                            <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
                            <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
@@ -2976,143 +2935,73 @@ const HelpSupport = () => {
                   <div ref={chatEndRef} />
                </div>
 
-               <div className="p-4 border-t border-slate-100 bg-white">
+               <div className="p-4 border-t border-slate-200 bg-white">
                   <div className="flex gap-2">
                      <input
-                        type="text"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSendText()}
-                        placeholder="Ask about crops, soil, weather..."
-                        className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+                        onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                        placeholder="Ask your question..."
+                        className="flex-1 px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500"
                      />
                      <button
-                        onClick={handleSendText}
-                        disabled={!input.trim() || isTextLoading}
-                        className="bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 rounded-xl text-sm font-semibold shadow-lg shadow-green-100 transition-all"
+                        onClick={handleSend}
+                        disabled={!input.trim() || isLoading}
+                        className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
                      >
                         Send
                      </button>
                   </div>
                </div>
             </Card>
-         )}
 
-         {/* Documentation Tab */}
-         {activeTab === 'docs' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               {docs.map((doc, idx) => {
-                  const Icon = doc.icon;
-                  return (
-                     <Card key={idx} className="p-6 group cursor-pointer hover:shadow-lg transition-all">
-                        <div className="flex items-start gap-4 mb-4">
-                           <div className="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center group-hover:bg-green-100 transition-colors">
-                              <Icon className="w-6 h-6" />
-                           </div>
-                           <div className="flex-1">
-                              <h3 className="text-base font-semibold text-slate-900">{doc.title}</h3>
-                              <p className="text-xs text-slate-500 mt-0.5">{doc.description}</p>
-                           </div>
-                        </div>
-                        <ul className="space-y-2">
-                           {doc.items.map((item, i) => (
-                              <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
-                                 <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                                 {item}
-                              </li>
-                           ))}
-                        </ul>
-                        <button className="mt-4 text-sm font-semibold text-green-600 hover:text-green-700 flex items-center gap-2 group/btn">
-                           Read more
-                           <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                        </button>
-                     </Card>
-                  );
-               })}
-            </div>
-         )}
-
-         {/* FAQ Tab */}
-         {activeTab === 'faq' && (
-            <div className="space-y-3 max-w-4xl">
-               {faqs.map((faq, idx) => (
-                  <Card key={idx} className="p-0 overflow-hidden">
-                     <button
-                        onClick={() => setExpandedFaq(expandedFaq === idx ? null : idx)}
-                        className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors"
-                     >
-                        <span className="text-base font-semibold text-slate-900 text-left">{faq.question}</span>
-                        <ChevronDown
-                           className={`w-5 h-5 text-slate-400 transition-transform flex-shrink-0 ${
-                              expandedFaq === idx ? 'rotate-180' : ''
-                           }`}
-                        />
-                     </button>
-                     {expandedFaq === idx && (
-                        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50">
-                           <p className="text-slate-600 leading-relaxed">{faq.answer}</p>
-                        </div>
-                     )}
-                  </Card>
-               ))}
-            </div>
-         )}
-
-         {/* Contact Tab */}
-         {activeTab === 'contact' && (
-            <div>
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  {contacts.map((contact, idx) => {
-                     const Icon = contact.icon;
-                     return (
-                        <Card
-                           key={idx}
-                           className="p-6 text-center hover:shadow-lg hover:border-green-200 transition-all cursor-pointer group"
-                           onClick={contact.action}
-                        >
-                           <div className="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center mb-4 mx-auto group-hover:bg-green-100 transition-colors">
-                              <Icon className="w-6 h-6" />
-                           </div>
-                           <h3 className="text-base font-semibold text-slate-900 mb-1">{contact.label}</h3>
-                           <p className="text-sm text-slate-600">{contact.value}</p>
-                        </Card>
-                     );
-                  })}
+            {/* FAQ Sidebar */}
+            <Card className="p-6 h-fit">
+               <h2 className="font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                  <HelpCircle className="w-5 h-5 text-green-600" />
+                  Quick Answers
+               </h2>
+               <div className="space-y-2">
+                  {faqs.map((item, i) => (
+                     <details key={i} className="group">
+                        <summary className="cursor-pointer py-2 px-2 text-sm font-medium text-slate-900 group-open:text-green-600 hover:bg-slate-50 rounded transition-colors flex items-center justify-between">
+                           <span className="text-left">{item.q}</span>
+                           <ChevronDown className="w-4 h-4 flex-shrink-0 group-open:rotate-180 transition-transform" />
+                        </summary>
+                        <p className="text-xs text-slate-600 px-2 py-2 border-t border-slate-200 mt-1">{item.a}</p>
+                     </details>
+                  ))}
                </div>
+            </Card>
+         </div>
 
-               {/* Contact Form */}
-               <Card className="p-8 bg-gradient-to-br from-slate-50 to-white">
-                  <h3 className="text-lg font-semibold text-slate-900 mb-6">Send us a message</h3>
-                  <div className="space-y-4">
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input
-                           type="text"
-                           placeholder="Your name"
-                           className="px-4 py-3 rounded-lg border border-slate-200 bg-white text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
-                        />
-                        <input
-                           type="email"
-                           placeholder="Your email"
-                           className="px-4 py-3 rounded-lg border border-slate-200 bg-white text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
-                        />
-                     </div>
-                     <input
-                        type="text"
-                        placeholder="Subject"
-                        className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
-                     />
-                     <textarea
-                        placeholder="How can we help?"
-                        rows={5}
-                        className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 resize-none"
-                     />
-                     <button className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition-colors">
-                        Send Message
-                     </button>
-                  </div>
-               </Card>
-            </div>
-         )}
+         {/* Additional Resources */}
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card className="p-6 border-l-4 border-green-600">
+               <h3 className="font-semibold text-slate-900 mb-2 flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-green-600" />
+                  Documentation
+               </h3>
+               <p className="text-sm text-slate-600 mb-4">Learn everything about AgriScore features and how to use them effectively.</p>
+               <button className="text-sm font-semibold text-green-600 hover:text-green-700 flex items-center gap-1">
+                  Read docs <ChevronRight className="w-4 h-4" />
+               </button>
+            </Card>
+
+            <Card className="p-6 border-l-4 border-green-600">
+               <h3 className="font-semibold text-slate-900 mb-2 flex items-center gap-2">
+                  <LifeBuoy className="w-5 h-5 text-green-600" />
+                  Need Help?
+               </h3>
+               <p className="text-sm text-slate-600 mb-4">Our support team is ready to help you with any issues or questions.</p>
+               <button 
+                  onClick={() => window.location.href = 'mailto:support@agriscore.in'}
+                  className="text-sm font-semibold text-green-600 hover:text-green-700 flex items-center gap-1"
+               >
+                  Contact support <ChevronRight className="w-4 h-4" />
+               </button>
+            </Card>
+         </div>
       </div>
    );
 };
