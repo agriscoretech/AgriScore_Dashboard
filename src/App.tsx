@@ -2792,8 +2792,14 @@ const MyAccount = () => {
 };
 
 const HelpSupport = () => {
-   const [activeTab, setActiveTab] = useState<'docs' | 'faq' | 'contact'>('docs');
+   const [activeTab, setActiveTab] = useState<'chat' | 'docs' | 'faq' | 'contact'>('chat');
    const [expandedFaq, setExpandedFaq] = useState<number | null>(0);
+   const [messages, setMessages] = useState<{role: 'user' | 'model', text: string}[]>([
+      { role: 'model', text: 'Hi! 👋 I\'m your AgriScore assistant. Ask me anything about crops, soil health, weather, or farm management!' }
+   ]);
+   const [input, setInput] = useState('');
+   const [isTextLoading, setIsTextLoading] = useState(false);
+   const chatEndRef = useRef<HTMLDivElement>(null);
 
    const docs = [
       { 
@@ -2851,27 +2857,76 @@ const HelpSupport = () => {
       { label: 'Live Chat', value: 'Available 8am-8pm IST', icon: MessageSquare, action: () => alert('Opening live chat...') },
    ];
 
+   useEffect(() => {
+      chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+   }, [messages]);
+
+   const handleSendText = async () => {
+      if (!input.trim()) return;
+      const userMsg = input;
+      setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
+      setInput('');
+      setIsTextLoading(true);
+
+      try {
+         const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+         if (!apiKey || apiKey === 'your_gemini_api_key_here') {
+            throw new Error('Gemini API Key missing. Please set VITE_GEMINI_API_KEY in your .env.local file.');
+         }
+
+         const ai = new GoogleGenAI({ apiKey });
+
+         const contents = messages.map(m => ({
+            role: m.role === 'user' ? 'user' : 'model',
+            parts: [{ text: m.text }]
+         }));
+
+         contents.push({
+            role: 'user',
+            parts: [{ text: userMsg }]
+         });
+
+         const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents,
+            config: {
+               systemInstruction: 'You are an expert agricultural assistant helping farmers with crop management, soil health, weather patterns, and farm operations. Provide practical, actionable advice.'
+            }
+         });
+
+         const text = response.text || 'No response received';
+         setMessages(prev => [...prev, { role: 'model', text }]);
+      } catch (error: any) {
+         console.error('Text chat error:', error);
+         const errorMsg = error.message || 'Error connecting to AI.';
+         setMessages(prev => [...prev, { role: 'model', text: `Error: ${errorMsg}` }]);
+      } finally {
+         setIsTextLoading(false);
+      }
+   };
+
    return (
-      <div className="space-y-8 pb-8">
+      <div className="space-y-6 pb-8">
          <div>
             <h1 className="text-3xl font-bold text-slate-900 mb-2">Help & Support</h1>
-            <p className="text-slate-500">Get answers, explore documentation, or reach our support team</p>
+            <p className="text-slate-500">Get instant answers from our AI assistant or explore documentation</p>
          </div>
 
          {/* Tab Navigation */}
-         <div className="flex gap-1 bg-slate-50 p-1 rounded-xl w-fit">
+         <div className="flex gap-2 overflow-x-auto pb-2">
             {[
-               { id: 'docs', label: 'Documentation' },
-               { id: 'faq', label: 'FAQ' },
-               { id: 'contact', label: 'Contact' }
+               { id: 'chat', label: '💬 AI Chatbot', icon: MessageSquare },
+               { id: 'docs', label: '📚 Documentation', icon: BookOpen },
+               { id: 'faq', label: '❓ FAQ', icon: HelpCircle },
+               { id: 'contact', label: '📞 Contact', icon: Mail }
             ].map(tab => (
                <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                  className={`px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all ${
                      activeTab === tab.id
-                        ? 'bg-white text-slate-900 shadow-sm'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-green-600 text-white shadow-lg shadow-green-200'
+                        : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300'
                   }`}
                >
                   {tab.label}
@@ -2879,18 +2934,79 @@ const HelpSupport = () => {
             ))}
          </div>
 
+         {/* Chat Tab */}
+         {activeTab === 'chat' && (
+            <Card className="p-0 overflow-hidden h-[600px] flex flex-col">
+               <div className="p-6 border-b border-slate-100 bg-gradient-to-r from-green-50 to-white flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                     <div className="w-12 h-12 rounded-full bg-green-600 text-white flex items-center justify-center">
+                        <MessageSquare className="w-6 h-6" />
+                     </div>
+                     <div>
+                        <p className="text-sm font-semibold text-slate-900">AgriScore AI Assistant</p>
+                        <p className="text-xs text-slate-500">Powered by Google Gemini</p>
+                     </div>
+                  </div>
+                  <div className="text-xs font-semibold text-green-600 bg-green-100 px-3 py-1.5 rounded-full flex items-center gap-2">
+                     <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" /> Online
+                  </div>
+               </div>
+
+               <div className="flex-1 overflow-y-auto bg-slate-50 p-6 space-y-4 custom-scrollbar">
+                  {messages.map((msg, idx) => (
+                     <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-xs rounded-2xl p-4 text-sm leading-relaxed ${
+                           msg.role === 'user'
+                              ? 'bg-green-600 text-white rounded-br-sm'
+                              : 'bg-white text-slate-700 border border-slate-200 rounded-bl-sm shadow-sm'
+                        }`}>
+                           {msg.text}
+                        </div>
+                     </div>
+                  ))}
+                  {isTextLoading && (
+                     <div className="flex justify-start">
+                        <div className="bg-white p-4 rounded-2xl rounded-bl-sm border border-slate-200 shadow-sm flex gap-2 items-center">
+                           <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" />
+                           <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                           <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
+                        </div>
+                     </div>
+                  )}
+                  <div ref={chatEndRef} />
+               </div>
+
+               <div className="p-4 border-t border-slate-100 bg-white">
+                  <div className="flex gap-2">
+                     <input
+                        type="text"
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSendText()}
+                        placeholder="Ask about crops, soil, weather..."
+                        className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+                     />
+                     <button
+                        onClick={handleSendText}
+                        disabled={!input.trim() || isTextLoading}
+                        className="bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 rounded-xl text-sm font-semibold shadow-lg shadow-green-100 transition-all"
+                     >
+                        Send
+                     </button>
+                  </div>
+               </div>
+            </Card>
+         )}
+
          {/* Documentation Tab */}
          {activeTab === 'docs' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                {docs.map((doc, idx) => {
                   const Icon = doc.icon;
                   return (
-                     <div
-                        key={idx}
-                        className="group p-6 rounded-2xl border border-slate-100 bg-white hover:border-slate-200 hover:shadow-lg transition-all cursor-pointer"
-                     >
+                     <Card key={idx} className="p-6 group cursor-pointer hover:shadow-lg transition-all">
                         <div className="flex items-start gap-4 mb-4">
-                           <div className="w-12 h-12 rounded-xl bg-slate-50 text-slate-700 flex items-center justify-center group-hover:bg-green-50 group-hover:text-green-600 transition-colors">
+                           <div className="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center group-hover:bg-green-100 transition-colors">
                               <Icon className="w-6 h-6" />
                            </div>
                            <div className="flex-1">
@@ -2901,7 +3017,7 @@ const HelpSupport = () => {
                         <ul className="space-y-2">
                            {doc.items.map((item, i) => (
                               <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
-                                 <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                                 <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
                                  {item}
                               </li>
                            ))}
@@ -2910,7 +3026,7 @@ const HelpSupport = () => {
                            Read more
                            <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                         </button>
-                     </div>
+                     </Card>
                   );
                })}
             </div>
@@ -2918,12 +3034,9 @@ const HelpSupport = () => {
 
          {/* FAQ Tab */}
          {activeTab === 'faq' && (
-            <div className="space-y-3 max-w-3xl">
+            <div className="space-y-3 max-w-4xl">
                {faqs.map((faq, idx) => (
-                  <div
-                     key={idx}
-                     className="border border-slate-100 rounded-xl overflow-hidden bg-white hover:border-slate-200 transition-all"
-                  >
+                  <Card key={idx} className="p-0 overflow-hidden">
                      <button
                         onClick={() => setExpandedFaq(expandedFaq === idx ? null : idx)}
                         className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors"
@@ -2940,35 +3053,35 @@ const HelpSupport = () => {
                            <p className="text-slate-600 leading-relaxed">{faq.answer}</p>
                         </div>
                      )}
-                  </div>
+                  </Card>
                ))}
             </div>
          )}
 
          {/* Contact Tab */}
          {activeTab === 'contact' && (
-            <div className="max-w-3xl">
+            <div>
                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                   {contacts.map((contact, idx) => {
                      const Icon = contact.icon;
                      return (
-                        <button
+                        <Card
                            key={idx}
+                           className="p-6 text-center hover:shadow-lg hover:border-green-200 transition-all cursor-pointer group"
                            onClick={contact.action}
-                           className="p-6 rounded-2xl border border-slate-100 bg-white hover:border-green-200 hover:bg-green-50 transition-all group"
                         >
-                           <div className="w-12 h-12 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center mb-4 group-hover:bg-green-100 group-hover:text-green-600 transition-colors">
+                           <div className="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center mb-4 mx-auto group-hover:bg-green-100 transition-colors">
                               <Icon className="w-6 h-6" />
                            </div>
-                           <h3 className="text-base font-semibold text-slate-900 text-left mb-1">{contact.label}</h3>
-                           <p className="text-sm text-slate-600 text-left">{contact.value}</p>
-                        </button>
+                           <h3 className="text-base font-semibold text-slate-900 mb-1">{contact.label}</h3>
+                           <p className="text-sm text-slate-600">{contact.value}</p>
+                        </Card>
                      );
                   })}
                </div>
 
                {/* Contact Form */}
-               <div className="bg-gradient-to-br from-slate-50 to-white rounded-2xl border border-slate-100 p-8">
+               <Card className="p-8 bg-gradient-to-br from-slate-50 to-white">
                   <h3 className="text-lg font-semibold text-slate-900 mb-6">Send us a message</h3>
                   <div className="space-y-4">
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2997,7 +3110,7 @@ const HelpSupport = () => {
                         Send Message
                      </button>
                   </div>
-               </div>
+               </Card>
             </div>
          )}
       </div>
