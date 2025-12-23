@@ -60,18 +60,6 @@ npm install
 npm run dev
 ```
 
-### Environment Variables
-
-Create a `.env.local` file in the root directory:
-
-```env
-VITE_GEMINI_API_KEY=your_gemini_api_key_here
-```
-
-Get your Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
-
-### Available Scripts
-
 ```bash
 npm run dev      # Start development server
 npm run build    # Build for production
