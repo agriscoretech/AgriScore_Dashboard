@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { Mail, Lock, User, Eye, EyeOff, AlertCircle, ArrowRight, CheckCircle2, Wheat, Droplets, Sun, Sprout } from 'lucide-react';
-import ThreeBackground from './ThreeBackground';
+
+const ThreeBackground = React.lazy(() => import('./ThreeBackground'));
 
 interface AuthPageProps {
   onContinueDemo?: () => void;
@@ -20,6 +21,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onContinueDemo }) => {
   const [mounted, setMounted] = useState(false);
   
   const { signIn, signUp, resetPassword, signInWithGoogle, signInWithFacebook, isConfigured } = useAuth();
+
+  const isNetworkFetchError = (msg: string) => {
+    const text = (msg || '').toLowerCase();
+    return text.includes('failed to fetch') || text.includes('networkerror') || text.includes('load failed');
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -91,7 +97,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onContinueDemo }) => {
     <div className="min-h-screen flex bg-[#1a3a2e]">
       {/* Left Panel - Three.js Farming Animation */}
       <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden">
-        <ThreeBackground />
+        <Suspense fallback={null}>
+          <ThreeBackground />
+        </Suspense>
         
         {/* Gradient Overlay - darker for better text contrast */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-black/20 to-[#1a3a2e]/80 z-5" />
@@ -180,11 +188,47 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onContinueDemo }) => {
             </p>
           </div>
 
+          {/* Forgot Password Helper */}
+          {isForgotPassword && (
+            <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
+                  <Mail className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-amber-900">We’ll email you a secure reset link</p>
+                  <p className="text-xs text-amber-800 leading-relaxed mt-1">
+                    Use the email linked to your account. If you don’t see it, check Spam/Promotions.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Messages */}
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-center gap-3">
               <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
               <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
+
+          {error && isNetworkFetchError(error) && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+              <p className="text-sm text-amber-800 font-semibold mb-2">Login service unreachable</p>
+              <p className="text-xs text-amber-700 leading-relaxed">
+                This usually means your `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` is missing/incorrect, or the network is blocking requests to Supabase.
+                You can continue in demo mode while you fix the env.
+              </p>
+              {onContinueDemo && (
+                <button
+                  type="button"
+                  onClick={onContinueDemo}
+                  className="mt-3 w-full bg-gradient-to-r from-amber-500 to-green-600 hover:from-amber-600 hover:to-green-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors"
+                >
+                  Continue to Dashboard (Demo)
+                </button>
+              )}
             </div>
           )}
 

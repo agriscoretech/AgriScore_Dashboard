@@ -1,116 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { HashRouter, Routes, Route, Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { HashRouter, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, Sprout, Bell, Droplets, Settings, Menu, X, 
   Thermometer, Activity, Battery, Wifi, WifiOff, MapPin, ChevronRight,
   Wind, AlertTriangle, FileText, Stethoscope, BarChart2, HelpCircle, LogOut,
   Search, Download, Sun, Cloud, ArrowDown, ArrowUp, Carrot, MoreHorizontal, Calendar,
-   User as UserIcon, Shield, Globe, Lock, Mail, Smartphone, Camera, Save, ToggleLeft, ToggleRight,
-  CheckCircle, Clock, Filter, Plus, Trash2, Droplet, CloudRain, Zap, Image as ImageIcon,
+  User as UserIcon, Shield, Globe, Lock, Mail, Smartphone, Camera, Save,
+  CheckCircle, Clock, Filter, Plus, Trash2, Droplet, CloudRain, Zap,
   ChevronDown, MessageSquare, Phone, FlaskConical, Layers, Diamond, Award, Star,
-   CreditCard, Users, Link as LinkIcon, Key, History, BadgeCheck, AlertCircle, FileCheck,
-   Facebook, IndianRupee, Sunrise, Sunset, Eye, Gauge, Navigation, Umbrella, MoveRight,
-   BookOpen, Bug, LifeBuoy, Upload
+  CreditCard, Users, Link as LinkIcon, Key, History, BadgeCheck, AlertCircle, FileCheck,
+  Facebook, IndianRupee, Sunrise, Sunset, Eye, Gauge, Navigation, Umbrella, MoveRight,
+  BookOpen, Bug, LifeBuoy, Upload
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, AreaChart, Area } from 'recharts';
 import { GoogleGenAI } from "@google/genai";
 import { api } from './services/mockDataService';
 import { useProfile } from './hooks/useAuth';
 import { supabase } from './lib/supabase';
-import { Farm, Field, Device, Sensor, Reading, Alert, IrrigationEvent, DeviceStatus, AlertSeverity, SensorType, Task, HarvestItem, User } from './types';
+import { Task, HarvestItem } from './types';
+
+// Import reusable UI components
+import { StatusBadge, Toggle, Card, SectionHeader, MiniGauge } from './components/ui';
 
 const soilHistoryUrl = new URL('./assets/data/IoT_soil_data.csv', import.meta.url).href;
-
-// --- Helper Components ---
-
-const StatusBadge = ({ status }: { status: string }) => {
-   const styles: Record<string, string> = {
-      'Pending': 'bg-amber-50 text-amber-600',
-      'In Progress': 'bg-blue-50 text-blue-600',
-      'Completed': 'bg-green-50 text-green-600',
-      'Online': 'bg-green-50 text-green-600',
-      'Offline': 'bg-red-50 text-red-600',
-      'Maintenance': 'bg-amber-100 text-amber-700',
-      'Scheduled': 'bg-purple-50 text-purple-600',
-      'Critical': 'bg-red-100 text-red-700',
-      'Warning': 'bg-orange-100 text-orange-700',
-      'Excellent': 'bg-green-50 text-green-600',
-      'Good': 'bg-blue-50 text-blue-600',
-      'Fair': 'bg-orange-50 text-orange-600',
-      'Poor': 'bg-red-50 text-red-600',
-      'Active': 'bg-green-100 text-green-700',
-      'Inactive': 'bg-slate-100 text-slate-500',
-   };
-  
-   return (
-      <span className={`px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide ${styles[status] || 'bg-gray-50 text-gray-600'}`}>
-         {status}
-      </span>
-   );
-};
-
-const Toggle = ({ enabled, onChange }: { enabled: boolean; onChange: (val: boolean) => void }) => (
-   <button
-      onClick={() => onChange(!enabled)}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500/20 ${enabled ? 'bg-green-500' : 'bg-slate-300'}`}
-   >
-      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ease-in-out ${enabled ? 'translate-x-6' : 'translate-x-1'}`} />
-   </button>
-);
-
-const Card = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-   <div className={`bg-white rounded-[24px] p-6 shadow-soft border border-slate-100/60 ${className}`}>
-      {children}
-   </div>
-);
-
-const SectionHeader = ({ title, subtitle, action }: { title: string; subtitle?: string; action?: React.ReactNode }) => (
-   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-6">
-      <div>
-         <h1 className="text-[22px] font-bold text-slate-900">{title}</h1>
-         {subtitle && <p className="text-slate-500 text-sm mt-1 font-medium">{subtitle}</p>}
-      </div>
-      {action}
-   </div>
-);
-
-const MiniGauge = ({ value, max, color, track, size = 80, strokeWidth = 8, children }: { value: number; max: number; color: string; track: string; size?: number; strokeWidth?: number; children?: React.ReactNode }) => {
-   const radius = (size - strokeWidth) / 2;
-   const circumference = radius * 2 * Math.PI;
-   const normalizedValue = Math.min(Math.max(value, 0), max);
-   const offset = circumference - (normalizedValue / max) * circumference;
-
-   return (
-      <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
-         <svg className="w-full h-full transform -rotate-90">
-            <circle
-               cx={size / 2}
-               cy={size / 2}
-               r={radius}
-               stroke="currentColor"
-               strokeWidth={strokeWidth}
-               fill="transparent"
-               className={`${track} opacity-20`}
-            />
-            <circle
-               cx={size / 2}
-               cy={size / 2}
-               r={radius}
-               stroke="currentColor"
-               strokeWidth={strokeWidth}
-               fill="transparent"
-               strokeDasharray={circumference}
-               strokeDashoffset={offset}
-               strokeLinecap="round"
-               className={`${color} transition-all duration-700 ease-out`}
-            />
-         </svg>
-         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            {children}
-         </div>
-      </div>
-   );
-};
 
 const Layout: React.FC<{ children: React.ReactNode; onLogout: () => void }> = ({ children, onLogout }) => {
    const location = useLocation();
@@ -3403,72 +3315,30 @@ const PlaceholderPage = ({ title }: { title: string }) => (
   </div>
 );
 
-// Auth imports
-import { useAuth } from './hooks/useAuth';
-import { AuthPage } from './components/auth/AuthPage';
-import { ResetPasswordPage } from './components/auth/ResetPasswordPage';
-
-const AppContent = () => {
-   const { user, loading, signOut, isConfigured } = useAuth();
-   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
-   const [demoAcknowledged, setDemoAcknowledged] = useState(false);
-
-   // Check if this is a password recovery redirect
-   useEffect(() => {
-      const hash = window.location.hash;
-      // Supabase password recovery URLs contain type=recovery in the hash
-      if (hash && hash.includes('type=recovery')) {
-         setIsPasswordRecovery(true);
-      }
-   }, []);
-
-   const handleContinueDemo = () => setDemoAcknowledged(true);
-   const shouldShowAuth = !user && (isConfigured || !demoAcknowledged);
-
-   // Show password reset page if in recovery mode
-   if (isPasswordRecovery) {
-      return <ResetPasswordPage />;
-   }
-
-   // Show loading spinner while checking auth
-   if (loading) {
-      return (
-         <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 flex items-center justify-center">
-            <div className="flex flex-col items-center gap-4">
-               <div className="w-12 h-12 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
-               <p className="text-slate-600 font-medium">Loading...</p>
-            </div>
-         </div>
-      );
-   }
-
-   // Show auth screen when user is missing (demo can opt out)
-   if (shouldShowAuth) {
-      return <AuthPage onContinueDemo={!isConfigured ? handleContinueDemo : undefined} />;
-   }
-
-   // Show dashboard (works in demo mode when Supabase not configured)
-   return (
-      <HashRouter>
-         <Layout onLogout={signOut}>
-            <Routes>
-               <Route path="/" element={<Dashboard />} />
-               <Route path="/farms" element={<CropManagement />} />
-               <Route path="/irrigation" element={<SoilWater />} />
-               <Route path="/weather" element={<WeatherPage />} />
-               <Route path="/tasks" element={<TaskManagement />} />
-               <Route path="/doctor" element={<CropDoctor />} />
-               <Route path="/reports" element={<ReportsAnalytics />} />
-               <Route path="/score" element={<AgriScorePage />} />
-               <Route path="/settings" element={<FarmSettings />} />
-               <Route path="/account" element={<MyAccount />} />
-               <Route path="/help" element={<HelpSupport />} />
-            </Routes>
-         </Layout>
-      </HashRouter>
-   );
+export type AppShellProps = {
+  onLogout: () => void;
 };
 
-const App = () => <AppContent />;
+const AppShell: React.FC<AppShellProps> = ({ onLogout }) => {
+  return (
+    <HashRouter>
+      <Layout onLogout={onLogout}>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/farms" element={<CropManagement />} />
+          <Route path="/irrigation" element={<SoilWater />} />
+          <Route path="/weather" element={<WeatherPage />} />
+          <Route path="/tasks" element={<TaskManagement />} />
+          <Route path="/doctor" element={<CropDoctor />} />
+          <Route path="/reports" element={<ReportsAnalytics />} />
+          <Route path="/score" element={<AgriScorePage />} />
+          <Route path="/settings" element={<FarmSettings />} />
+          <Route path="/account" element={<MyAccount />} />
+          <Route path="/help" element={<HelpSupport />} />
+        </Routes>
+      </Layout>
+    </HashRouter>
+  );
+};
 
-export default App;
+export default AppShell;

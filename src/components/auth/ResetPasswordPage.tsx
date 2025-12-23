@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { Lock, Eye, EyeOff, AlertCircle, CheckCircle2, ArrowRight } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import { ThreeBackground } from './ThreeBackground';
+
+const ThreeBackground = React.lazy(() => import('./ThreeBackground'));
 
 export const ResetPasswordPage: React.FC = () => {
   const [password, setPassword] = useState('');
@@ -54,21 +55,62 @@ export const ResetPasswordPage: React.FC = () => {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
-        <ThreeBackground />
-        <div className="absolute inset-0 bg-black/30" />
-        
-        <div className={`relative z-10 bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-10 w-full max-w-md mx-4 text-center transition-all duration-700 ${mounted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle2 className="w-10 h-10 text-green-600" />
+      <div className="min-h-screen flex bg-[#1a3a2e]">
+        {/* Left Panel - Three.js Farming Animation */}
+        <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden">
+          <Suspense fallback={null}>
+            <ThreeBackground />
+          </Suspense>
+
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-black/20 to-[#1a3a2e]/80 z-5" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#1a3a2e]/60 via-transparent to-black/20 z-5" />
+
+          {/* Minimal overlay branding */}
+          <div className={`relative z-10 flex flex-col justify-between p-12 text-white w-full transition-all duration-1000 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+            <div className="flex items-center gap-3">
+              <img src="/logo.svg" alt="AgriScore" className="w-16 h-16 drop-shadow-2xl" />
+            </div>
+
+            <div className="max-w-lg">
+              <h1 className="text-4xl xl:text-5xl font-bold leading-tight tracking-tight text-white drop-shadow-lg">
+                Password updated
+              </h1>
+              <p className="text-white/80 text-lg leading-relaxed max-w-md mt-4 drop-shadow-md">
+                You’ll be redirected back to the app in a moment.
+              </p>
+            </div>
+
+            <div className="flex gap-12 pt-8 border-t border-white/30">
+              <div>
+                <div className="text-3xl font-bold text-yellow-300 drop-shadow-lg">Secure</div>
+                <div className="text-white/80 text-sm mt-1 font-medium">Account Recovery</div>
+              </div>
+            </div>
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-3">Password Updated!</h2>
-          <p className="text-slate-600 mb-6">
-            Your password has been successfully changed. You'll be redirected to the app shortly.
-          </p>
-          <div className="flex items-center justify-center gap-2 text-green-600">
-            <div className="w-2 h-2 bg-green-600 rounded-full animate-pulse" />
-            <span className="text-sm font-medium">Redirecting...</span>
+        </div>
+
+        {/* Right Panel - Success */}
+        <div className="w-full lg:w-[45%] flex items-center justify-center p-6 sm:p-10 bg-gradient-to-br from-orange-50 via-amber-50 to-green-50">
+          <div className={`w-full max-w-md transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+            <div className="lg:hidden text-center mb-10">
+              <img src="/logo.svg" alt="AgriScore" className="w-20 h-20 mx-auto" />
+              <p className="text-slate-500 mt-3">Secure account recovery</p>
+            </div>
+
+            <div className="bg-white rounded-3xl shadow-xl p-8 border border-amber-100 text-center">
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle2 className="w-10 h-10 text-green-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900 mb-3">Password Updated!</h2>
+              <p className="text-slate-600 mb-6">
+                Your password has been successfully changed. You'll be redirected to the app shortly.
+              </p>
+              <div className="flex items-center justify-center gap-2 text-green-600">
+                <div className="w-2 h-2 bg-green-600 rounded-full animate-pulse" />
+                <span className="text-sm font-medium">Redirecting...</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -76,41 +118,80 @@ export const ResetPasswordPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
-      <ThreeBackground />
-      <div className="absolute inset-0 bg-black/30" />
-      
-      <div className={`relative z-10 bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-10 w-full max-w-4xl mx-4 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="relative inline-block">
-            <div className="absolute -inset-10 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-3xl blur-2xl"></div>
-            <img src="/logo.svg" alt="AgriScore" className="relative mx-auto drop-shadow-xl" style={{ width: '800px', height: 'auto' }} />
+    <div className="min-h-screen flex bg-[#1a3a2e]">
+      {/* Left Panel - Three.js Farming Animation */}
+      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden">
+        <Suspense fallback={null}>
+          <ThreeBackground />
+        </Suspense>
+
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-black/20 to-[#1a3a2e]/80 z-5" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#1a3a2e]/60 via-transparent to-black/20 z-5" />
+
+        {/* Overlay Content */}
+        <div className={`relative z-10 flex flex-col justify-between p-12 text-white w-full transition-all duration-1000 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+          <div className="flex items-center gap-3">
+            <img src="/logo.svg" alt="AgriScore" className="w-16 h-16 drop-shadow-2xl" />
           </div>
-        </div>
 
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">
-            Set New Password
-          </h2>
-          <p className="text-slate-600">
-            Choose a strong password to protect your account
-          </p>
-        </div>
+          <div className="max-w-lg">
+            <h1 className="text-5xl xl:text-6xl font-bold leading-tight tracking-tight text-white drop-shadow-lg">
+              Secure your
+              <br />
+              <span className="bg-gradient-to-r from-yellow-300 via-amber-200 to-orange-300 bg-clip-text text-transparent drop-shadow-lg">
+                account
+              </span>
+            </h1>
+            <p className="text-white text-lg leading-relaxed max-w-md mt-6 italic drop-shadow-md">
+              Set a strong new password to keep your farm data protected.
+            </p>
+          </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-              <p className="text-sm text-red-700">{error}</p>
+          <div className="flex gap-12 pt-8 border-t border-white/30">
+            <div>
+              <div className="text-3xl font-bold text-emerald-300 drop-shadow-lg">Fast</div>
+              <div className="text-white/80 text-sm mt-1 font-medium">Password Reset</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-yellow-300 drop-shadow-lg">Safe</div>
+              <div className="text-white/80 text-sm mt-1 font-medium">Secure Access</div>
             </div>
           </div>
-        )}
+        </div>
+      </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Right Panel - Reset Form */}
+      <div className="w-full lg:w-[45%] flex items-center justify-center p-6 sm:p-10 bg-gradient-to-br from-orange-50 via-amber-50 to-green-50">
+        <div className={`w-full max-w-md transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+          {/* Mobile Logo */}
+          <div className="lg:hidden text-center mb-10">
+            <img src="/logo.svg" alt="AgriScore" className="w-20 h-20 mx-auto" />
+            <p className="text-slate-500 mt-3">Secure account recovery</p>
+          </div>
+
+          {/* Desktop Brand */}
+          <div className="hidden lg:block text-center mb-10">
+            <img src="/logo.svg" alt="AgriScore" className="w-20 h-20 mx-auto" />
+            <p className="text-slate-500 mt-3">Secure account recovery</p>
+          </div>
+
+          {/* Header */}
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-slate-800">Set New Password</h2>
+            <p className="text-slate-500 mt-3">Choose a strong password to protect your account</p>
+          </div>
+
+          {/* Messages */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
               New Password
@@ -193,14 +274,15 @@ export const ResetPasswordPage: React.FC = () => {
         </form>
 
         {/* Back to Login */}
-        <p className="text-center text-slate-600 mt-6">
-          <a 
-            href={window.location.origin}
-            className="text-green-600 hover:text-green-700 font-semibold"
-          >
-            Back to Sign In
-          </a>
-        </p>
+          <p className="text-center text-slate-600 mt-6">
+            <a
+              href={window.location.origin}
+              className="text-green-600 hover:text-green-700 font-semibold"
+            >
+              Back to Sign In
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );
